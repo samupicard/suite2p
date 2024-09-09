@@ -145,7 +145,7 @@ def pipeline(f_reg, f_raw=None, f_reg_chan2=None, f_raw_chan2=None,
             plane_times["two_step_registration"] = time.time() - t11
             print("----------- Total %0.2f sec" % plane_times["two_step_registration"])
 
-        # compute metrics for registration (edit SP: now excludes manually defined bad frames UNFINISHED)
+        # compute metrics for registration (edit SP: now excludes manually defined bad frames)
         if ops.get("do_regmetrics", True) and n_frames >= 1500:
             t0 = time.time()
             badframes = np.zeros(n_frames,"bool") # initialize badframes
@@ -416,8 +416,6 @@ def run_s2p(ops={}, db={}, server={}):
             ops['save_path0'] = os.path.split(ops['nwb_file'])[0]
         else:
             ops["save_path0"] = ops["data_path"][0]
-    ops_datapath = os.path.join(ops["data_path"][0],ops["subfolders"][0])
-    print(f"NOTE: first data path defined as {str(ops_datapath)}")
     # check if there are binaries already made
     if "save_folder" not in ops or len(ops["save_folder"]) == 0:
         ops["save_folder"] = "suite2p"
