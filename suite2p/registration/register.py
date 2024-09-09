@@ -668,7 +668,10 @@ def registration_wrapper(f_reg, f_raw=None, f_reg_chan2=None, f_raw_chan2=None,
     # compute valid region
     badframes = np.zeros(n_frames, "bool")
     if "data_path" in ops and len(ops["data_path"]) > 0:
-        badfrfile = path.abspath(path.join(ops["data_path"][0], "bad_frames.npy"))
+        if "subfolders" in ops and len(ops["subfolders"]) > 0:
+            badfrfile = path.abspath(path.join(ops["data_path"][0], ops["subfolders"][0], "bad_frames.npy"))
+        else:
+            badfrfile = path.abspath(path.join(ops["data_path"][0], "bad_frames.npy"))
         # Check if badframes file exists
         if path.isfile(badfrfile):
             print("bad frames file path: %s" % badfrfile)

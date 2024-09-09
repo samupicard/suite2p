@@ -145,22 +145,37 @@ def pipeline(f_reg, f_raw=None, f_reg_chan2=None, f_raw_chan2=None,
             plane_times["two_step_registration"] = time.time() - t11
             print("----------- Total %0.2f sec" % plane_times["two_step_registration"])
 
-        # compute metrics for registration
+        # compute metrics for registration (edit SP: now excludes manually defined bad frames UNFINISHED)
         if ops.get("do_regmetrics", True) and n_frames >= 1500:
             t0 = time.time()
-            # n frames to pick from full movie
-            nsamp = min(2000 if n_frames < 5000 or Ly > 700 or Lx > 700 else 5000,
-                        n_frames)
-            inds = np.linspace(0, n_frames - 1, nsamp).astype("int")
-            mov = f_reg[inds]
-            mov = mov[:, ops["yrange"][0]:ops["yrange"][-1],
-                      ops["xrange"][0]:ops["xrange"][-1]]
-            ops = registration.get_pc_metrics(mov, ops)
-            plane_times["registration_metrics"] = time.time() - t0
-            print("Registration metrics, %0.2f sec." %
-                  plane_times["registration_metrics"])
-            if ops.get("ops_path"):
-                np.save(ops["ops_path"], ops)
+            badframes = np.zeros(n_frames,"bool") # initialize badframes
+            # if bad frames were manually input, exclude the frame indices defined in it
+            #badfrfile = []
+            #for root, dirs, files in os.walk(ops["data_path"][0]):
+            #    for file in files:
+            #        if file.endswith("bad_frames.npy"):
+            #            badfrfile.append(os.path.join(root, file))
+            badfrfile = os.path.abspath(os.path.join(ops["data_path"][0], ops["subfolders"][0], "bad_frames.npy"))
+            if os.path.isfile(badfrfile):
+                bf_indices = np.load(badfrfile)
+                bf_indices = bf_indices.flatten().astype(int)
+                badframes[bf_indices] = True
+            f_reg_clean = f_reg[~badframes]
+            n_frames_clean, Ly, Lx = f_reg_clean.shape
+            if n_frames_clean >= 1500:
+                # n frames to pick from full movie
+                nsamp = min(2000 if n_frames_clean < 5000 or Ly > 700 or Lx > 700 else 5000,
+                            n_frames_clean)
+                inds = np.linspace(0, n_frames_clean - 1, nsamp).astype("int")
+                mov = f_reg_clean[inds]
+                mov = mov[:, ops["yrange"][0]:ops["yrange"][-1],
+                          ops["xrange"][0]:ops["xrange"][-1]]
+                ops = registration.get_pc_metrics(mov, ops)
+                plane_times["registration_metrics"] = time.time() - t0
+                print("Registration metrics, %0.2f sec." %
+                      plane_times["registration_metrics"])
+                if ops.get("ops_path"):
+                    np.save(ops["ops_path"], ops)
 
     if ops.get("roidetect", True):
         n_frames, Ly, Lx = f_reg.shape
@@ -401,7 +416,8 @@ def run_s2p(ops={}, db={}, server={}):
             ops['save_path0'] = os.path.split(ops['nwb_file'])[0]
         else:
             ops["save_path0"] = ops["data_path"][0]
-
+    ops_datapath = os.path.join(ops["data_path"][0],ops["subfolders"][0])
+    print(f"NOTE: first data path defined as {str(ops_datapath)}")
     # check if there are binaries already made
     if "save_folder" not in ops or len(ops["save_folder"]) == 0:
         ops["save_folder"] = "suite2p"
