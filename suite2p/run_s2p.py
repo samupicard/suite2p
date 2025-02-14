@@ -156,9 +156,9 @@ def pipeline(f_reg, f_raw=None, f_reg_chan2=None, f_raw_chan2=None,
             #        if file.endswith("bad_frames.npy"):
             #            badfrfile.append(os.path.join(root, file))
             if "subfolders" in ops and len(ops["subfolders"]) > 0:
-                badfrfile = path.abspath(path.join(ops["data_path"][0], ops["subfolders"][0], "bad_frames.npy"))
+                badfrfile = os.path.abspath(os.ath.join(ops["data_path"][0], ops["subfolders"][0], "bad_frames.npy"))
             else:
-                badfrfile = path.abspath(path.join(ops["data_path"][0], "bad_frames.npy"))
+                badfrfile = os.path.abspath(os.path.join(ops["data_path"][0], "bad_frames.npy"))
             # Check if badframes file exists
             if os.path.isfile(badfrfile):
                 bf_indices = np.load(badfrfile)
