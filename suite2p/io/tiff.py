@@ -318,7 +318,7 @@ def mesoscan_to_binary(ops):
     nchannels = ops1[0]["nchannels"]
     batch_size = ops["batch_size"]
 
-    # which tiff reader works for user"s tiffs
+    # which tiff reader works for user's tiffs
     use_sktiff = True if ops["force_sktiff"] else use_sktiff_reader(
         fs[0], batch_size=ops1[0].get("batch_size"))
 
